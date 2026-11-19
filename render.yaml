@@ -28,8 +28,9 @@ services:
         value: native
       - key: DB_POOL_SIZE
         value: "3"
+      # The app's address and its previous one (it redirects to the new one).
       - key: CORS_ORIGINS
-        value: https://frontendpatsft.vercel.app
+        value: https://aquaassistantai.vercel.app,https://frontendpatsft.vercel.app
       - key: GEMINI_API_KEY
         sync: false
       - key: GROQ_API_KEY
