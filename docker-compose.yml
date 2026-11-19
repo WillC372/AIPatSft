@@ -1,0 +1,12 @@
+# Local AI service against a local PostgreSQL that already has the schema (apply it with DBPatSft:
+# docker compose up in that repository). Usage: docker compose --env-file .env up --build
+services:
+  ai:
+    build: .
+    env_file: .env
+    environment:
+      DB_URL: jdbc:postgresql://host.docker.internal:5432/aquasense
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - "8081:8080"

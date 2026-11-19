@@ -1,0 +1,36 @@
+# Render Blueprint for the Aqua Assistant AI artificial intelligence service (Docker, free plan).
+# Render -> New -> Blueprint -> select this repository. Values marked "sync: false" are typed in the Render
+# dashboard when the Blueprint is created; they are never stored in the repository.
+# It does not keep itself awake: the free plan has 750 hours a month for all services together and the backend uses
+# them to stay awake. This service sleeps after 15 minutes without use and the app wakes it when someone signs in.
+services:
+  - type: web
+    name: aquasense-ai-willc372
+    runtime: docker
+    plan: free
+    region: oregon
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /actuator/health
+    autoDeploy: true
+    envVars:
+      # The same Neon database as the backend: postgresql://user:password@host/neondb?sslmode=require
+      - key: DATABASE_URL
+        sync: false
+      # The SAME value as the backend's JWT_SECRET: the AI service accepts the sessions the backend opens.
+      - key: JWT_SECRET
+        sync: false
+      # The SAME value as the backend's INTERNAL_API_KEY (at least 16 characters, e.g. openssl rand -hex 32).
+      - key: INTERNAL_API_KEY
+        sync: false
+      - key: BACKEND_URL
+        value: https://aquasense-backend-willc372.onrender.com
+      - key: FORWARD_HEADERS_STRATEGY
+        value: native
+      - key: DB_POOL_SIZE
+        value: "3"
+      - key: CORS_ORIGINS
+        value: https://frontendpatsft.vercel.app
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
