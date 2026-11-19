@@ -53,6 +53,56 @@ public class DeepForecastService {
 
     private final com.aquaassistant.place.PlaceAccess places;
     private final com.aquaassistant.measurement.PlaceStamps stamps;
+    /** Networks trained with an official station, kept 30 minutes (the backend imports new data every 3 hours). */
+    private final com.aquaassistant.common.ExpiringCache<String, Model> stationCache =
+        new com.aquaassistant.common.ExpiringCache<>(java.time.Duration.ofMinutes(30), 20);
+    private OfficialSeries official;
+    private com.aquaassistant.profile.WaterProfileRepository profiles;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    void setOfficialData(OfficialSeries official, com.aquaassistant.profile.WaterProfileRepository profiles) {
+        this.official = official;
+        this.profiles = profiles;
+    }
+
+    /** USGS stations with enough data to train the network. */
+    public List<OfficialSeries.Station> officialStations() {
+        return official.stations();
+    }
+
+    /**
+     * Trains the network with the real series of an official USGS station (rivers measured every 15 minutes), to see
+     * it work with real data when the place does not have days of measurements yet. It is not the person's water:
+     * the response says so, and the ranges of the general use profile are used for the early warning.
+     */
+    public DeepForecastResponse forecastStation(String stationId) {
+        if (!OfficialSeries.validId(stationId)) {
+            throw com.aquaassistant.common.BusinessException.badRequest("Estación no válida.");
+        }
+        String name = official.name(stationId);
+        if (name == null) {
+            throw com.aquaassistant.common.BusinessException.notFound("La estación no existe en los datos oficiales.");
+        }
+        WaterProfile general = profiles.findFirstBySystemProfileTrueAndType(com.aquaassistant.profile.ProfileType.GENERAL)
+            .orElseThrow();
+        Model model = stationCache.get(stationId, id -> fit(asMeasurements(official.readings(id), general), Math.abs(id.hashCode()),
+            false, Instant.now()));
+        String source = "Datos oficiales del USGS · " + stationId + " (" + name + "). No son tus mediciones: son de un río"
+            + " medido por el Servicio Geológico de EE. UU.";
+        return model.toResponse(general, source, OFFICIAL_DISCLAIMER);
+    }
+
+    private static final String OFFICIAL_DISCLAIMER = "Predicción a 12 horas de una estación oficial del USGS, para ver cómo"
+        + " funciona la red con datos reales. No describe tu agua.";
+
+    private static List<Measurement> asMeasurements(List<OfficialSeries.Reading> readings, WaterProfile general) {
+        com.aquaassistant.profile.PhClassifier classifier = new com.aquaassistant.profile.PhClassifier();
+        return readings.stream().map(r -> {
+            var c = classifier.classify(r.ph(), general);
+            return new Measurement(null, null, general.getId(), r.ph(), null, r.at(), MeasurementSource.REAL, c.nature(),
+                c.status(), com.aquaassistant.measurement.validation.ValidationStatus.VALID, null, null);
+        }).toList();
+    }
 
     public DeepForecastService(MeasurementRepository repository, ProfileService profileService,
                                com.aquaassistant.place.PlaceAccess places) {
@@ -249,15 +299,19 @@ public class DeepForecastService {
         }
 
         DeepForecastResponse toResponse(WaterProfile profile) {
+            return toResponse(profile, null, DISCLAIMER);
+        }
+
+        DeepForecastResponse toResponse(WaterProfile profile, String dataSource, String disclaimer) {
             List<DeepForecastResponse.HistoryPoint> history = series.subList(Math.max(0, series.size() - 48), series.size())
                 .stream().map(p -> new DeepForecastResponse.HistoryPoint(p.hour(), round(p.ph(), 3), p.observed())).toList();
             if (!trained) {
                 return new DeepForecastResponse(false, reason, simulated, data, null, null, null, null, null, history,
-                    null, DISCLAIMER);
+                    null, disclaimer, dataSource);
             }
             DeepForecastResponse.Alert alert = forecast == null ? null : alert(forecast, profile);
             return new DeepForecastResponse(true, null, simulated, data, architecture, training, evaluation, forecast, alert,
-                history, explanation(), DISCLAIMER);
+                history, explanation(), disclaimer, dataSource);
         }
 
         private String explanation() {

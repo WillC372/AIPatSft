@@ -9,7 +9,8 @@ import java.util.List;
  */
 public record DeepForecastResponse(boolean trained, String reason, boolean includesSimulated, DataSummary data,
                                    Architecture architecture, Training training, Evaluation evaluation, Forecast forecast,
-                                   Alert alert, List<HistoryPoint> history, String explanation, String disclaimer) {
+                                   Alert alert, List<HistoryPoint> history, String explanation, String disclaimer,
+                                   String dataSource) {
 
     public record DataSummary(int measurements, int hours, int observedHours, int interpolatedHours, int segments,
                               double spanDays, int windows, int requiredWindows) {
