@@ -39,7 +39,7 @@ public class OfficialSeries {
         return jdbc.query("""
             select s.id, s.name, s.state, count(r.id) as n, min(r.measured_at) as first_at, max(r.measured_at) as last_at
             from reference_stations s join reference_readings r on r.station_id = s.id
-            group by s.id, s.name, s.state having count(r.id) >= ? order by s.name""",
+            group by s.id, s.name, s.state having count(r.id) >= ? order by count(r.id) desc, s.name""",
             (rs, i) -> new Station(rs.getString("id"), rs.getString("name"), rs.getString("state"), rs.getInt("n"),
                 rs.getTimestamp("first_at").toInstant(), rs.getTimestamp("last_at").toInstant()), MIN_READINGS);
     }
