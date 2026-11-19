@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 /**
  * Keeps every text of the interface translated in advance into each language, so changing the language is immediate
  * and no screen waits for the AI. The texts come from i18n/ui-texts.txt (extracted from the app's code with
- * scripts/extract-ui-texts.mjs). It starts a little after the server does and again every hour, and only sends what
+ * scripts/ExtractUiTexts.java). It starts a little after the server does and again every hour, and only sends what
  * is still missing, slowly (small batches with a pause), so the per-minute limits of the free AI plans are respected.
  */
 @Component

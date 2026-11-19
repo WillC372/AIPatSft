@@ -106,7 +106,7 @@ Cuando el backend crea una alarma por alteración del pH, la app pide aquí una 
 
 La aplicación se muestra en español, inglés, francés, alemán, italiano, chino simplificado y japonés (`i18n/`). Cada texto se traduce una vez por idioma con la IA y se guarda en la tabla compartida `ui_translations`; la aplicación descarga el diccionario de su idioma (`GET /api/v1/i18n/dictionary/{lang}`) y pide los textos nuevos (`POST /api/v1/i18n/translate`).
 
-- `i18n/ui-texts.txt` lista los textos de la aplicación, de los mensajes de los dos servicios, de la base de conocimiento y de los perfiles del sistema. Se genera con `scripts/extract-ui-texts.mjs`, que lee los cuatro repositorios. `UiTextWarmer` los mantiene traducidos de antemano en lotes pequeños.
+- `i18n/ui-texts.txt` lista los textos de la aplicación, de los mensajes de los dos servicios, de la base de conocimiento y de los perfiles del sistema. Se genera con `java scripts/ExtractUiTexts.java ../FrontendPatSft ../BackendPatSft . ../DBPatSft src/main/resources/i18n/ui-texts.txt`, que lee los cuatro repositorios. `UiTextWarmer` los mantiene traducidos de antemano en lotes pequeños.
 - Las traducciones comparten la cuota gratuita de la IA con las respuestas de Aqua y nunca la agotan: pueden usar 60 llamadas al día (`aquasense.i18n.ai-calls-per-day`), la traducción anticipada solo el 60 % de ellas, y se pausan 3 horas cuando un proveedor avisa que llegó a su límite. Un presupuesto por dirección y por día limita los textos nuevos que llegan desde fuera.
 - El diccionario es público, así que nunca guarda datos personales: la aplicación no envía lo que escribe cada persona (nombres, correos, lugares, notas, preguntas del chat) y el servicio rechaza cualquier texto con un correo.
 - Una traducción con otro trato («vous», «Sie», «Lei», «您») se pide de nuevo.
@@ -150,7 +150,7 @@ El frontend local ya apunta a `http://localhost:8081/api/v1` para todo lo de la 
 mvn test
 ```
 
-123 pruebas; GitHub Actions las corre en cada cambio de `main` (`.github/workflows/Tests.yml`). Último resultado (19 nov 2026): 123/123 aprobadas. Usan H2 en modo PostgreSQL con una copia de las migraciones (`scripts/sync-migrations.sh ../DBPatSft` la actualiza). Las cuentas y las mediciones de prueba se escriben directamente en la base de prueba, igual que las crea el backend en producción (`support/TestAccounts`), y el backend se reemplaza por un servidor local que responde como su ruta interna (`support/FakeBackend`). Los proveedores de IA se imitan con un servidor HTTP local (`support/FakeAiServer`).
+123 pruebas; GitHub Actions las corre en cada cambio de `main` (`.github/workflows/Tests.yml`). Último resultado (19 nov 2026): 123/123 aprobadas. Usan H2 en modo PostgreSQL con una copia de las migraciones (`java scripts/SyncMigrations.java ../DBPatSft` la actualiza). Las cuentas y las mediciones de prueba se escriben directamente en la base de prueba, igual que las crea el backend en producción (`support/TestAccounts`), y el backend se reemplaza por un servidor local que responde como su ruta interna (`support/FakeBackend`). Los proveedores de IA se imitan con un servidor HTTP local (`support/FakeAiServer`).
 
 ## Despliegue
 
