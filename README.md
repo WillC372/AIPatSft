@@ -146,7 +146,7 @@ El frontend local ya apunta a `http://localhost:8081/api/v1` para todo lo de la 
 mvn test
 ```
 
-Usan H2 en modo PostgreSQL con una copia de las migraciones (`scripts/sync-migrations.sh ../DBPatSft` la actualiza). Las cuentas y las mediciones de prueba se escriben directamente en la base de prueba, igual que las crea el backend en producción (`support/TestAccounts`), y el backend se reemplaza por un servidor local que responde como su ruta interna (`support/FakeBackend`). Los proveedores de IA se imitan con un servidor HTTP local (`support/FakeAiServer`).
+119 pruebas; GitHub Actions las corre en cada cambio de `main` (`.github/workflows/Tests.yml`). Último resultado (19 nov 2026): 119/119 aprobadas. Usan H2 en modo PostgreSQL con una copia de las migraciones (`scripts/sync-migrations.sh ../DBPatSft` la actualiza). Las cuentas y las mediciones de prueba se escriben directamente en la base de prueba, igual que las crea el backend en producción (`support/TestAccounts`), y el backend se reemplaza por un servidor local que responde como su ruta interna (`support/FakeBackend`). Los proveedores de IA se imitan con un servidor HTTP local (`support/FakeAiServer`).
 
 ## Despliegue
 
