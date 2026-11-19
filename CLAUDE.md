@@ -14,7 +14,7 @@ El equipo multiagente (`/equipo-ingenieria` y los especialistas de `.claude/agen
 
 - Entender antes de cambiar: leer el código actual, sus pruebas y su documentación.
 - Cambios estructurales importantes (arquitectura, contratos entre servicios, esquema, navegación, identidad visual, dependencias nuevas): primero una propuesta con problema, evidencia técnica, impacto, alternativas, ventajas y desventajas y solución recomendada (`docs/calidad/plantilla-propuesta.md` de FrontendPatSft). Se espera la aprobación del dueño.
-- Nunca en `main`: ramas `mejora/H-XXX-descripcion` (o `calidad/...` para documentación del equipo) y pull request. El merge publica en producción y lo hace el dueño. `.claude/hooks/proteger-main.mjs` bloquea commits y pushes a `main`, push forzado y `reset --hard`.
+- Nunca en `main`: ramas `mejora/H-XXX-descripcion` (o `calidad/...` para documentación del equipo) y pull request. El merge publica en producción y lo hace el dueño. `.claude/hooks/ProtegerMain.java` bloquea commits y pushes a `main`, push forzado y `reset --hard`.
 - Sin despliegues, sin cambiar credenciales, secretos ni variables de Render, Vercel, Neon o GitHub.
 - Base de datos: solo migraciones nuevas y aditivas en DBPatSft; una migración aplicada nunca se edita; nada destructivo sin aprobación.
 - Pruebas antes y después de cada cambio, con los números; cada cambio queda en el registro con cómo revertirlo.
