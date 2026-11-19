@@ -106,6 +106,7 @@ La aplicación se muestra en español, inglés, francés, alemán, italiano, chi
 - Las traducciones comparten la cuota gratuita de la IA con las respuestas de Aqua y nunca la agotan: pueden usar 60 llamadas al día (`aquasense.i18n.ai-calls-per-day`), la traducción anticipada solo el 60 % de ellas, y se pausan 3 horas cuando un proveedor avisa que llegó a su límite. Un presupuesto por dirección y por día limita los textos nuevos que llegan desde fuera.
 - El diccionario es público, así que nunca guarda datos personales: la aplicación no envía lo que escribe cada persona (nombres, correos, lugares, notas, preguntas del chat) y el servicio rechaza cualquier texto con un correo.
 - Una traducción con otro trato («vous», «Sie», «Lei», «您») se pide de nuevo.
+- Si la IA devuelve el texto en español sin cambios, no se guarda y se vuelve a pedir más tarde (la migración V25 borró los que habían quedado así).
 
 ## Informes en PDF
 
