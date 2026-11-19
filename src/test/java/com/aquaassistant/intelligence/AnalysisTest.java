@@ -9,7 +9,7 @@ import com.aquaassistant.intelligence.analysis.Forecaster;
 import com.aquaassistant.intelligence.analysis.OutOfRangeRule;
 import com.aquaassistant.intelligence.analysis.StatisticalOutlierRule;
 import com.aquaassistant.intelligence.analysis.Statistics;
-import com.aquaassistant.intelligence.analysis.SuddenChangeRule;
+import com.aquaassistant.intelligence.analysis.PhAlterationRule;
 import com.aquaassistant.intelligence.analysis.TrendAnalyzer;
 import com.aquaassistant.intelligence.analysis.TrendResult;
 import com.aquaassistant.measurement.Measurement;
@@ -25,7 +25,7 @@ class AnalysisTest {
 
     private final WaterProfile pool = TestData.pool();
     private final AnomalyDetector detector = new AnomalyDetector(
-        List.of(new OutOfRangeRule(), new SuddenChangeRule(), new StatisticalOutlierRule()));
+        List.of(new OutOfRangeRule(), new PhAlterationRule(), new StatisticalOutlierRule()));
 
     @Test
     void regressionRecoversKnownLine() {
@@ -43,7 +43,29 @@ class AnalysisTest {
         }
         Measurement spike = TestData.measurement(99, 8.6, start.plus(Duration.ofHours(11)).plus(Duration.ofMinutes(20)), pool);
         List<String> types = detector.detect(spike, history, pool).stream().map(Anomaly::type).toList();
-        assertThat(types).containsExactlyInAnyOrder("OUT_OF_RANGE", "SUDDEN_CHANGE", "STATISTICAL_OUTLIER");
+        assertThat(types).containsExactlyInAnyOrder("OUT_OF_RANGE", "PH_ALTERATION", "STATISTICAL_OUTLIER");
+    }
+
+    /** H-003: the backend alarm and the analyses of this service give the same verdict for the same readings. */
+    @Test
+    void sameVerdictAsTheBackendAlarm() {
+        Instant now = Instant.now();
+        WaterProfile general = new WaterProfile(null, "Uso general", com.aquaassistant.profile.ProfileType.GENERAL,
+            new com.aquaassistant.profile.PhRange(6.5, 8.5, 6.0, 9.0), "", "");
+        PhAlterationRule rule = new PhAlterationRule();
+        // 7.0 -> 8.1 in 5 minutes with the general profile: an alteration, but not dangerous (it stays in the ideal range).
+        Anomaly a = rule.evaluate(TestData.measurement(2, 8.1, now, general),
+            List.of(TestData.measurement(1, 7.0, now.minus(Duration.ofMinutes(5)), general)), general).orElseThrow();
+        assertThat(a.severity()).isEqualTo(Anomaly.Severity.CAUTION);
+        // Pool 7.5 -> 8.1: critical for a pool, so dangerous.
+        Anomaly b = rule.evaluate(TestData.measurement(4, 8.1, now, pool),
+            List.of(TestData.measurement(3, 7.5, now.minus(Duration.ofMinutes(5)), pool)), pool).orElseThrow();
+        assertThat(b.severity()).isEqualTo(Anomaly.Severity.CRITICAL);
+        // A gradual rise 7.0, 7.2, 7.4, 7.6 within the hour is seen too (the old rule only compared with the last one).
+        List<Measurement> rising = List.of(TestData.measurement(5, 7.0, now.minus(Duration.ofMinutes(30)), general),
+            TestData.measurement(6, 7.2, now.minus(Duration.ofMinutes(20)), general),
+            TestData.measurement(7, 7.4, now.minus(Duration.ofMinutes(10)), general));
+        assertThat(rule.evaluate(TestData.measurement(8, 7.6, now, general), rising, general)).isPresent();
     }
 
     @Test
