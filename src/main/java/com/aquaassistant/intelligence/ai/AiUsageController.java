@@ -13,8 +13,11 @@ public class AiUsageController {
 
     private final AiUsageService service;
 
-    public AiUsageController(AiUsageService service) {
+    private final com.aquaassistant.user.UserRepository users;
+
+    public AiUsageController(AiUsageService service, com.aquaassistant.user.UserRepository users) {
         this.service = service;
+        this.users = users;
     }
 
     @GetMapping("/api/v1/intelligence/ai-usage")
@@ -24,6 +27,7 @@ public class AiUsageController {
 
     @GetMapping("/api/v1/admin/ai-usage")
     public AiUsageReport global(@RequestParam(defaultValue = "30") int days) {
-        return service.global(days);
+        boolean demo = users.findById(CurrentUser.id()).map(com.aquaassistant.user.User::isDemo).orElse(true);
+        return service.global(days, demo);
     }
 }

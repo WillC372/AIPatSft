@@ -50,16 +50,31 @@ public class AiUsageService {
 
     @Transactional(readOnly = true)
     public AiUsageReport global(int days) {
+        return global(days, false);
+    }
+
+    /**
+     * {@code masked}: for the shared demo administrator, whose password is public, the e-mails are shown as
+     * "w***@dominio" (the same rule as the backend's administration screen).
+     */
+    @Transactional(readOnly = true)
+    public AiUsageReport global(int days, boolean masked) {
         int period = clamp(days);
         List<AiUsage> rows = repository.findByCreatedAtAfterOrderByCreatedAtAsc(since(period));
         Map<Long, List<AiUsage>> byUser = rows.stream().collect(Collectors.groupingBy(AiUsage::getUserId));
         List<AiUsageReport.UserRow> users = byUser.entrySet().stream().map(e -> new AiUsageReport.UserRow(e.getKey(),
-                userRepository.findById(e.getKey()).map(u -> u.getEmail()).orElse("(eliminado)"), successful(e.getValue()).size(),
+                userRepository.findById(e.getKey()).map(u -> masked ? maskEmail(u.getEmail()) : u.getEmail()).orElse("(eliminado)"),
+                successful(e.getValue()).size(),
                 tokens(e.getValue()), cost(e.getValue())))
             .sorted(Comparator.comparing(AiUsageReport.UserRow::estimatedUsd).reversed()
                 .thenComparing(Comparator.comparingLong(AiUsageReport.UserRow::calls).reversed()))
             .limit(10).toList();
         return build(period, rows, users, null, null);
+    }
+
+    static String maskEmail(String email) {
+        int at = email == null ? -1 : email.indexOf('@');
+        return at <= 0 ? "***" : email.charAt(0) + "***" + email.substring(at);
     }
 
     AiUsageReport build(int period, List<AiUsage> rows, List<AiUsageReport.UserRow> users, Long usedToday, Integer quota) {
