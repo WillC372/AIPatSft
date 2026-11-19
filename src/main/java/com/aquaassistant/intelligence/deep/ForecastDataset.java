@@ -5,8 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Sliding windows for the network: 24 input hours and 12 hours to predict. The network predicts the pH change
- * from the last hour (scaled), so "no change" is the same as the persistence baseline.
+ * Sliding windows for the network: 24 input hours and 12 hours to predict. The network learns the correction over
+ * a simple baseline (residual learning): over persistence (the last hour) or over the daily seasonal one (same hour of
+ * the previous day), whichever had the smaller error in the training windows (chosen with training data only). An
+ * output of zero is that baseline, so a network that learns nothing useful is as good as it, and the network only has
+ * to learn what the baseline misses (for example the daily cycle of a river).
  * It also computes the three simple baselines the network is compared with.
  */
 public final class ForecastDataset {
@@ -27,7 +30,11 @@ public final class ForecastDataset {
         }
     }
 
-    public record Scaling(double mean, double scale) {
+    public record Scaling(double mean, double scale, boolean seasonalBase) {
+
+        public Scaling(double mean, double scale) {
+            this(mean, scale, false);
+        }
 
         static Scaling fit(List<Window> windows) {
             double sum = 0;
@@ -42,7 +49,22 @@ public final class ForecastDataset {
             }
             double mean = n == 0 ? 7 : sum / n;
             double variance = n == 0 ? 0 : Math.max(0, sq / n - mean * mean);
-            return new Scaling(mean, Math.max(0.05, Math.sqrt(variance)));
+            double persistenceError = 0;
+            double seasonalError = 0;
+            for (Window w : windows) {
+                double[] pe = persistence(w);
+                double[] se = seasonal(w);
+                for (int k = 0; k < HORIZON; k++) {
+                    persistenceError += Math.abs(pe[k] - w.future()[k]);
+                    seasonalError += Math.abs(se[k] - w.future()[k]);
+                }
+            }
+            return new Scaling(mean, Math.max(0.05, Math.sqrt(variance)), !windows.isEmpty() && seasonalError < persistenceError);
+        }
+
+        /** The baseline the network corrects. */
+        public String baseLabel() {
+            return seasonalBase ? "estacional diaria (misma hora de ayer)" : "persistencia (última hora)";
         }
     }
 
@@ -74,12 +96,28 @@ public final class ForecastDataset {
         return x;
     }
 
+    /** The baseline the network starts from for this window. */
+    public static double[] base(Window w, Scaling scaling) {
+        return scaling.seasonalBase() ? seasonal(w) : persistence(w);
+    }
+
     public static double[] target(Window w, Scaling scaling) {
+        double[] base = base(w, scaling);
         double[] y = new double[HORIZON];
         for (int k = 0; k < HORIZON; k++) {
-            y[k] = (w.future()[k] - w.last()) / scaling.scale();
+            y[k] = (w.future()[k] - base[k]) / scaling.scale();
         }
         return y;
+    }
+
+    /** Turns the network output (scaled corrections over the baseline) into pH values. */
+    public static double[] toPh(double[] output, Window w, Scaling scaling) {
+        double[] base = base(w, scaling);
+        double[] ph = new double[output.length];
+        for (int k = 0; k < output.length; k++) {
+            ph[k] = base[k] + output[k] * scaling.scale();
+        }
+        return ph;
     }
 
     /** Turns the network output (scaled changes) into pH values. */

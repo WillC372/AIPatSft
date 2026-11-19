@@ -179,7 +179,7 @@ public class DeepForecastService {
         long millis = (System.nanoTime() - start) / 1_000_000;
 
         Map<String, Function<ForecastDataset.Window, double[]>> predictors = new java.util.LinkedHashMap<>();
-        predictors.put("lstm", w -> ForecastDataset.toPh(network.predict(ForecastDataset.features(w.input(), scaling)), w.last(), scaling));
+        predictors.put("lstm", w -> ForecastDataset.toPh(network.predict(ForecastDataset.features(w.input(), scaling)), w, scaling));
         predictors.put("persistence", ForecastDataset::persistence);
         predictors.put("linear", ForecastDataset::linear);
         predictors.put("seasonal", ForecastDataset::seasonal);
@@ -201,7 +201,8 @@ public class DeepForecastService {
         DeepForecastResponse.Training training = new DeepForecastResponse.Training(log.epochs(), log.bestEpoch(),
             Arrays.stream(log.trainLoss()).map(v -> round(v, 5)).boxed().toList(),
             Arrays.stream(log.validationLoss()).map(v -> round(v, 5)).boxed().toList(), millis, train.size(), val.size(), test.size());
-        DeepForecastResponse.Architecture architecture = new DeepForecastResponse.Architecture("LSTM (1 capa) + capa densa",
+        DeepForecastResponse.Architecture architecture = new DeepForecastResponse.Architecture(
+            "LSTM (1 capa) + capa densa que corrige la referencia " + scaling.baseLabel(),
             ForecastDataset.FEATURES.length, HIDDEN, ForecastDataset.HORIZON, ForecastDataset.WINDOW, ForecastDataset.HORIZON,
             network.parameterCount(), List.of(ForecastDataset.FEATURES));
 
