@@ -15,6 +15,7 @@
 ). Intenta con otra foto o registra el valor manualmente.
 ). Intenta verificar de nuevo en unos minutos.
 ). Se generó el informe por reglas.
+, midiendo cada {0} segundos
 ADMIN_EMAIL is set but no email channel is configured:
 API REST de Aqua Assistant AI: mediciones de pH, dispositivos, perfiles de agua y la IA de Aqua.
 Abierta
@@ -86,6 +87,8 @@ Al acidificar el agua, un pH bajo puede dañar tuberías y aspersores; hay que u
 Al menos un número
 Al menos una letra
 Al pulsar Medir, Aqua Assistant espera el siguiente valor que envíe el medidor (hasta {0} s): pulsa su botón de enviar o imprimir.
+Alarma con sonido si el pH se altera
+Alarma si el pH se altera
 Alcalina
 Alcalinidad
 Alcalinidad alta: al pH le costará bajar.
@@ -100,12 +103,15 @@ Alertas por correo
 Alertas recientes
 Algo no funcionó como se esperaba en esta pantalla. Si se repite, recarga la página.
 Alta
+Alteración del pH en el agua
 Alto
 Alto (pH {0})
 Analiza
 Analizando la foto con IA
 Analizar mi agua
 Android
+Animaciones
+Animaciones activadas en este dispositivo.
 Anomalía
 Anomalías detectadas
 Anota cada vez que echas cloro, ácido o cambias agua. Así recuerdas qué hiciste y cuándo, y Aqua lo tiene en cuenta al revisar tus mediciones.
@@ -152,6 +158,7 @@ Asegúrate de que tu medidor esté encendido y conectado al equipo donde corre e
 Asignar
 Así está el agua de
 Así se verán los avisos en este dispositivo.
+Así te aviso si el pH del agua se altera: suena la alarma y te digo si es peligroso.
 Atención: el entrenamiento incluye datos del simulador, que no representan agua real.
 Atención: el periodo incluye lecturas del simulador, que no representan agua real.
 Atlas Scientific EZO-pH
@@ -690,6 +697,7 @@ En acuarios y estanques usa productos hechos para peces y cambia el pH como much
 En aumento
 En descenso
 En el celular, o con un medidor sin cable de datos, usa el
+En este dispositivo suena una alarma al volumen del equipo y Aqua avisa en voz alta (si «Aqua habla» está encendido). Para que suene con la app abierta, el navegador pide haber tocado la página una vez.
 En iPhone primero agrega la app a la pantalla de inicio (Compartir → Agregar a inicio) y ábrela desde ahí.
 En la práctica: unos {0} días con al menos una medición cada pocas horas.
 En la tabla de determinaciones de laboratorio de la FAO, el rango usual de pH en el agua de riego es {0}-{1} (en una escala de {2} a {3}).
@@ -705,6 +713,7 @@ En vivo · {0} · no guardada
 En {0} h
 En {0} ventanas de prueba la red tuvo un error medio de {1} pH y no superó en al menos
 En {0} ventanas de prueba que la red no vio, su error medio fue {1} pH: {2} %% menor
+Enciende primero la alarma con sonido.
 Encuadra aquí la pantalla del medidor
 Enfocada y sin reflejos.
 English
@@ -735,6 +744,7 @@ Error {0}
 Errors
 Es el administrador principal configurado en el servidor (ADMIN_EMAIL).
 Es el único administrador activo: asigna otro administrador antes de eliminarla.
+Es peligroso
 Es un cambio grande: hazlo en varios días, de {0} a {1} de pH cada vez.
 Es una cuenta de demostración: no se puede modificar para que los botones de acceso sigan funcionando.
 Es una estimación estadística, no una medición. Confirma siempre con el medidor.
@@ -809,6 +819,7 @@ Estás usando el simulador. Sus lecturas se guardan como SIMULADAS y no represen
 Evaluación adicional:
 Evalúa acidificar el agua de riego con la dosis que indique un técnico.
 Evalúa la corrección con bases agrícolas según recomendación técnica.
+Evita bañarte hasta volver a medir y corrige con la calculadora de dosis.
 Evita dejar el agua en reposo en tuberías metálicas antes de consumirla.
 Evita que el pH suba y baje solo. Piscina: {0} a {1}.
 Evolución del pH
@@ -998,6 +1009,7 @@ La IA no está configurada en el servidor: la lectura por cámara no está dispo
 La IA no pudo elaborar el informe (
 La IA no pudo responder. Intenta de nuevo.
 La OMS no propone un valor guía de salud para el pH: normalmente no afecta directamente a quien consume el agua, pero es uno de los parámetros operacionales más importantes de la calidad del agua.
+La alarma sonará en este dispositivo.
 La alcalinidad máxima es {0} mg/L.
 La alcalinidad no puede ser negativa.
 La alerta no existe.
@@ -1053,6 +1065,7 @@ La tira junto a su carta de colores.
 La tira no se ve con claridad
 La última actualización falló (
 La última imagen no permitió leer el número.
+Las animaciones siguen la preferencia de tu equipo.
 Las contraseñas no coinciden.
 Las cuentas de demostración no pueden cambiar su contraseña.
 Las cuentas de demostración no pueden cambiar su nombre.
@@ -1241,6 +1254,7 @@ No puede ser mayor que el mínimo ideal.
 No puede ser menor que el máximo ideal.
 No puedes cambiar tu propio rol.
 No puedes desactivar tu propia cuenta.
+No riegues con esta agua hasta revisarla y corregirla.
 No se detectan anomalías
 No se detectan anomalías. Los valores se mantienen estables y en rango.
 No se detectaron anomalías.
@@ -1291,6 +1305,8 @@ No se puede
 No te volveré a avisar de esto.
 No tienes alertas pendientes.
 No tienes permiso para esta operación.
+No tomes esta agua ni la uses para cocinar hasta revisarla.
+No uses esta agua hasta revisarla.
 Nombre
 Nombre (opcional)
 Nombre actualizado.
@@ -1408,11 +1424,13 @@ Poco cloro: la desinfección puede no ser suficiente.
 Poco estabilizador: el sol degrada el cloro rápido.
 Pocos cambios de agua.
 Por USB (ESP{0} o medidor de bolsillo) o con la cámara
+Por ahora no es peligroso
 Por correo
 Por ejemplo tu piscina, la pecera de la sala o el tanque del techo. Cada uno guarda sus propias mediciones, sin mezclarse con las de los otros.
 Por ejemplo «medir el pH cada {0} días» o «limpiar el filtro cada semana». Cuando toca, aparece en Inicio en «Para hoy» y, si quieres, te llega un aviso al celular o un correo.
 Por función
 Por modelo
+Por precaución, que nadie se bañe: salgan del agua y no vuelvan a entrar hasta corregir el pH y volver a medir.
 Por seguridad se cerraron tus sesiones abiertas. Vuelve a iniciar sesión para continuar.
 Posibles causas
 Precaución
@@ -1448,6 +1466,7 @@ Primero agrega la mitad:
 Print
 Prioridad fuera de rango.
 Probar
+Probar alarma
 Probar aviso
 Producto
 Producto no soportado.
@@ -1628,6 +1647,7 @@ Secciones
 Sección
 Segunda opinión no concluyente
 Seguridad
+Según el sistema
 Selecciona un puerto serie válido.
 Send
 Serie horaria
@@ -1643,6 +1663,7 @@ Si crees que es un error, responde a este correo o escribe al administrador.
 Si el agua proviene de un pozo privado que pudo contaminarse o está cerca de una fuente de contaminación, la EPA recomienda analizarla en un laboratorio certificado.
 Si el correo está configurado, el usuario recibe un aviso de cada cambio de plan, rol o estado.
 Si el correo está registrado, recibirás un enlace para restablecer la contraseña.
+Si el pH cambia de golpe (por ejemplo, algo cayó a la piscina o al acuario) o llega a nivel crítico, suena una alarma, aparece una ventana que no se cierra sola y Aqua dice en voz alta qué pasó y si es peligroso. Funciona con cualquier perfil.
 Si el valor persiste
 Si está activo, cada medición con el medidor se guarda sin pedir confirmación.
 Si los peces muestran estrés (respiración rápida, letargo), consulta a un especialista en acuarios.
@@ -1650,6 +1671,7 @@ Si quieres que tu familia o tu técnico vean ese lugar desde su propia cuenta, t
 Si renuevas antes de que venza, los días se suman a tu fecha actual.
 Si una medición sale del rango, te aviso aquí.
 Si ya mediste con otro equipo
+Siempre
 Siguiente
 Simulación
 Simulador
@@ -1760,6 +1782,7 @@ Tipo de imagen no permitido.
 Tipo de medidor
 Tira reactiva
 To
+Toca esta ventana para oír la alarma: el navegador pide un toque antes de reproducir sonido.
 Toca hoy
 Toca para abrir Aqua Assistant AI.
 Toca tu inicial o tu nombre para «Mi cuenta», «Configuración» (tema, idioma, voz de Aqua, avisos, tu medidor y tu actividad) y «Cerrar sesión».
@@ -1799,6 +1822,8 @@ Tu cuenta de Aqua Assistant AI fue desactivada
 Tu cuenta de Aqua Assistant AI fue eliminada
 Tu cuenta fue eliminada.
 Tu cuenta ya tiene Premium asignado por un administrador, sin vencimiento.
+Tu equipo no pide reducir el movimiento: las animaciones se ven. «Según el sistema» las quitaría si un día lo activas.
+Tu equipo pide reducir el movimiento (en Windows, «Efectos de animación» apagado), así que con «Según el sistema» las animaciones casi no se ven. Con «Siempre» se ven en este dispositivo.
 Tu idioma usa una escritura que el PDF del servidor no puede dibujar: se abre la impresión de esta pantalla ya traducida. Elige «Guardar como PDF».
 Tu medición está cerca de ese valor.
 Tu medición está {0}
@@ -1891,11 +1916,13 @@ Ver la cita {0}
 Ver la estación en el sitio del USGS
 Ver lo que se hizo
 Ver los {0} fragmentos
+Ver qué hacer
 Ver sesiones anteriores ({0} más)
 Ver sus sesiones y lo que hizo en cada una
 Ver todas mis conversaciones
 Ver todo
 Verificar
+Vigila a los peces, vuelve a medir y corrige poco a poco.
 Volumen (opcional, para calcular dosis)
 Volumen del agua (litros)
 Volumen sin indicar
@@ -1905,6 +1932,7 @@ Voz
 Voz de Aqua
 Voz de Aqua: tócalo para que hable o se quede callada
 Vs. periodo anterior
+Vuelve a medir en unos minutos y corrige si sigue así.
 What if
 Windows
 Y aquí estoy yo
@@ -1921,6 +1949,7 @@ anomalías marcadas en rojo.
 cada cuántas horas medir
 calculado por el sistema
 cambio en la pantalla
+cambio tan rápido indica que algo entró al agua o que el medidor falla. Vuelve a medir en unos minutos.
 cierre de la piscina
 cifras coinciden con los datos.
 cifras de pH del informe coinciden con los datos que consultó el agente.
@@ -1988,6 +2017,7 @@ mediciones · {0} días
 medición
 medidor por cámara
 mejor época ({0})
+menos de un minuto
 menos de {0} min
 microbiológicos y químicos de laboratorio.
 minutos antes de intentarlo de nuevo.
@@ -2119,6 +2149,7 @@ y programa recordatorios.
 · cita literal
 · con citas verificadas
 · falló
+· midiendo
 · no guardada ({0})
 · no verificado
 · por
