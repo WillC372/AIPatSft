@@ -50,6 +50,11 @@ public class TranslationService {
     /** A text with an e-mail address is personal data: it is never sent to the AI nor kept in the shared dictionary. */
     private static final Pattern EMAIL = Pattern.compile("[\\w.+-]+@[\\w-]+(?:\\.[\\w-]+)+");
 
+    /** Signs that a text is still Spanish: a "translation" identical to its source with one of them was not translated. */
+    private static final Pattern SPANISH = Pattern.compile(
+        "[ñ¿¡áéíóú]|\\b(?:el|los|las|del|que|qué|está|tu|tus|agua|medidor|medición|mediciones)\\b",
+        Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
+
     /** Forms of address the app does not use ("vous", "Sie"...): a translation with one is asked again once. */
     static final Map<String, Pattern> OTHER_TONE = Map.of(
         "fr", Pattern.compile("(?i)\\b(vous|votre|vos)\\b"),
@@ -326,7 +331,8 @@ public class TranslationService {
         for (int i = 0; i < texts.size(); i++) {
             String source = texts.get(i);
             String target = i < translated.size() ? translated.get(i) : null;
-            if (target == null || target.isBlank() || !sameMarkers(source, target) || target.length() > MAX_TEXT * 3) {
+            if (target == null || target.isBlank() || !sameMarkers(source, target) || target.length() > MAX_TEXT * 3
+                || leftInSpanish(source, target)) {
                 continue;
             }
             dictionary.put(source, target);
@@ -384,6 +390,12 @@ public class TranslationService {
         } catch (Exception ex) {
             throw new IllegalStateException("respuesta de la IA ilegible", ex);
         }
+    }
+
+    /** The AI sometimes returns the Spanish text unchanged; that is not kept, so it is asked again later. */
+    static boolean leftInSpanish(String source, String target) {
+        return target.strip().equalsIgnoreCase(source.strip()) && SPANISH.matcher(source).find()
+            && !Languages.codes().stream().map(Languages::nativeName).toList().contains(source.strip());
     }
 
     static boolean sameMarkers(String source, String target) {

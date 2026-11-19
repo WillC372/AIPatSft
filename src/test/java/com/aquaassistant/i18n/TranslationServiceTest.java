@@ -57,6 +57,11 @@ class TranslationServiceTest {
 
     @Test
     void numberMarkersMustSurvive() {
+        assertThat(TranslationService.leftInSpanish("¿Qué quieres ajustar?", "¿Qué quieres ajustar?")).isTrue();
+        assertThat(TranslationService.leftInSpanish("Ácido cianúrico", "ácido cianúrico ")).isTrue();
+        assertThat(TranslationService.leftInSpanish("¿Qué quieres ajustar?", "Cosa vuoi regolare?")).isFalse();
+        assertThat(TranslationService.leftInSpanish("Español", "Español")).isFalse();
+        assertThat(TranslationService.leftInSpanish("pH {0}", "pH {0}")).isFalse();
         assertThat(TranslationService.sameMarkers("Cada {0} días", "Every {0} days")).isTrue();
         assertThat(TranslationService.sameMarkers("Cada {0} días", "Every day")).isFalse();
         assertThat(TranslationService.sameMarkers("<0>{0}</0> de {1}", "{1} の <0>{0}</0>")).isTrue();
