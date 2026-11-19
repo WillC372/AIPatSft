@@ -12,6 +12,7 @@ import com.aquaassistant.intelligence.dto.TrendsResponse;
 import com.aquaassistant.security.CurrentUser;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,11 +25,20 @@ public class IntelligenceController {
 
     private final IntelligenceFacade facade;
     private final com.aquaassistant.intelligence.scenario.ScenarioExplainer scenarioExplainer;
+    private final com.aquaassistant.intelligence.alarm.AlarmExplainer alarmExplainer;
 
     public IntelligenceController(IntelligenceFacade facade,
-                                  com.aquaassistant.intelligence.scenario.ScenarioExplainer scenarioExplainer) {
+                                  com.aquaassistant.intelligence.scenario.ScenarioExplainer scenarioExplainer,
+                                  com.aquaassistant.intelligence.alarm.AlarmExplainer alarmExplainer) {
         this.facade = facade;
         this.scenarioExplainer = scenarioExplainer;
+        this.alarmExplainer = alarmExplainer;
+    }
+
+    /** Extended explanation of an alarm for an alteration of the pH (likely causes, steps, when it is safe again). */
+    @PostMapping("/alarm/{alertId}/explain")
+    public com.aquaassistant.intelligence.alarm.AlarmExplanation explainAlarm(@PathVariable Long alertId) {
+        return alarmExplainer.explain(CurrentUser.id(), alertId);
     }
 
     @GetMapping("/overview")

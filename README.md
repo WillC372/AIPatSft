@@ -98,6 +98,10 @@ Si una respuesta ya empezada pasa 6 s sin texto nuevo, el servidor envía el eve
 **Verificado con llamadas reales (7 nov 2026).** Gemini 3.5 Flash generó un diagnóstico validado en unos 16 s. Con los modelos de Gemini forzados a fallar, la cadena respondió con Groq gpt-oss-120b. El chat respondió con Gemini usando las mediciones reales. Con imágenes sintéticas de prueba, la lectura por foto leyó una tira como 6.1 (Gemini 6.0 y Groq Qwen 6.2, coincidentes) y una pantalla como 7.42 a 24.6 °C, y rechazó una imagen sin relación con el agua. El agente de informes, con la cuota diaria de Gemini Flash agotada, reinició la investigación con Gemini Flash-Lite. Hizo entre 5 y 7 consultas según el objetivo, terminó en 4 a 7 segundos y todas sus cifras se verificaron (22/22 y 17/17). **Falta probarla con fotos reales de tiras**: la precisión con iluminación y cámaras reales no está medida. Los planes gratuitos tienen límites que cambian y que se consultan en AI Studio y en la consola de Groq.
 
 
+## Explicación de las alarmas
+
+Cuando el backend crea una alarma por alteración del pH, la app pide aquí una explicación más completa (`POST /api/v1/intelligence/alarm/{alertId}/explain`, `intelligence/alarm/AlarmExplainer.java`). El sistema reúne los datos: las mediciones de la última hora en ese lugar, el perfil y sus rangos, si es peligroso (lo decide el sistema: nivel crítico = peligroso) y los fragmentos de normas que aplican. La IA escribe, en JSON estricto y en el idioma de la persona, un resumen, las causas probables para ese tipo de agua, los pasos a seguir y cuándo vuelve a ser seguro, sin contradecir el veredicto ni dar dosis exactas. Si la IA no está disponible o se acabó la cuota, la misma estructura sale de las reglas del perfil. Cuenta como una consulta de IA («Explicación de alarmas» en Consumo y costos).
+
 ## Traducciones de la interfaz
 
 La aplicación se muestra en español, inglés, francés, alemán, italiano, chino simplificado y japonés (`i18n/`). Cada texto se traduce una vez por idioma con la IA y se guarda en la tabla compartida `ui_translations`; la aplicación descarga el diccionario de su idioma (`GET /api/v1/i18n/dictionary/{lang}`) y pide los textos nuevos (`POST /api/v1/i18n/translate`).
@@ -146,7 +150,7 @@ El frontend local ya apunta a `http://localhost:8081/api/v1` para todo lo de la 
 mvn test
 ```
 
-119 pruebas; GitHub Actions las corre en cada cambio de `main` (`.github/workflows/Tests.yml`). Último resultado (19 nov 2026): 119/119 aprobadas. Usan H2 en modo PostgreSQL con una copia de las migraciones (`scripts/sync-migrations.sh ../DBPatSft` la actualiza). Las cuentas y las mediciones de prueba se escriben directamente en la base de prueba, igual que las crea el backend en producción (`support/TestAccounts`), y el backend se reemplaza por un servidor local que responde como su ruta interna (`support/FakeBackend`). Los proveedores de IA se imitan con un servidor HTTP local (`support/FakeAiServer`).
+122 pruebas; GitHub Actions las corre en cada cambio de `main` (`.github/workflows/Tests.yml`). Último resultado (19 nov 2026): 122/122 aprobadas. Usan H2 en modo PostgreSQL con una copia de las migraciones (`scripts/sync-migrations.sh ../DBPatSft` la actualiza). Las cuentas y las mediciones de prueba se escriben directamente en la base de prueba, igual que las crea el backend en producción (`support/TestAccounts`), y el backend se reemplaza por un servidor local que responde como su ruta interna (`support/FakeBackend`). Los proveedores de IA se imitan con un servidor HTTP local (`support/FakeAiServer`).
 
 ## Despliegue
 

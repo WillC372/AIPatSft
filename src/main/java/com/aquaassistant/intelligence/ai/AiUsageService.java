@@ -28,7 +28,8 @@ public class AiUsageService {
     static final String LEGACY = "Registro anterior al seguimiento de costos";
     private static final Map<String, String> PURPOSES = Map.of(
         "DIAGNOSIS", "Diagnóstico", "CHAT", "Asistente", "CONCLUSION", "Conclusión", "AGENT_REPORT", "Agente de informes",
-        "PHOTO_READING", "Lectura por foto", "SCENARIO", "Simulador de escenarios");
+        "PHOTO_READING", "Lectura por foto", "SCENARIO", "Simulador de escenarios",
+        "ALARM", "Explicación de alarmas");
 
     private final AiUsageRepository repository;
     private final AiProviderProxy proxy;
