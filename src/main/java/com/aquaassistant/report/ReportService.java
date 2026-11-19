@@ -94,6 +94,10 @@ public class ReportService {
         summary.add(String.format("Origen: medidor físico %d, manual %d, foto con IA %d, simulador %d.",
             bySource.getOrDefault(MeasurementSource.REAL, 0), bySource.getOrDefault(MeasurementSource.MANUAL, 0),
             bySource.getOrDefault(MeasurementSource.PHOTO, 0), bySource.getOrDefault(MeasurementSource.SIMULATED, 0)));
+        if (bySource.containsKey(MeasurementSource.OFFICIAL)) {
+            summary.add(String.format("Datos oficiales del USGS cargados en el lugar: %d (mediciones reales de un río, no propias).",
+                bySource.get(MeasurementSource.OFFICIAL)));
+        }
         if (bySource.containsKey(MeasurementSource.SIMULATED)) {
             summary.add("Atención: el periodo incluye lecturas del simulador, que no representan agua real.");
         }

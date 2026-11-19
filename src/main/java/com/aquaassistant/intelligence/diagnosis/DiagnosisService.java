@@ -198,7 +198,12 @@ public class DiagnosisService {
         root.put("periodDays", facts.periodDays());
         root.put("totalMeasurements", facts.count());
         root.put("origin", Map.of("meter", facts.realCount(), "manual", facts.manualCount(), "simulator", facts.simulatedCount(),
-            "aiPhoto", count(facts.measurements(), MeasurementSource.PHOTO)));
+            "aiPhoto", count(facts.measurements(), MeasurementSource.PHOTO),
+            "officialUsgsRiverReadings", count(facts.measurements(), MeasurementSource.OFFICIAL)));
+        if (count(facts.measurements(), MeasurementSource.OFFICIAL) > 0) {
+            root.put("officialDataNote", "Part of the data are official USGS readings of a river loaded into this place: real"
+                + " water, but not measured by the user. Say so when relevant.");
+        }
         List<Measurement> recent = facts.measurements().subList(Math.max(0, facts.count() - 15), facts.count());
         root.put("lastMeasurements", recent.stream().map(m -> {
             Map<String, Object> row = new LinkedHashMap<>();
