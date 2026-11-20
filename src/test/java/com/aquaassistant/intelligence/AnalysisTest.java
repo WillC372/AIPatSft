@@ -66,6 +66,11 @@ class AnalysisTest {
             TestData.measurement(6, 7.2, now.minus(Duration.ofMinutes(20)), general),
             TestData.measurement(7, 7.4, now.minus(Duration.ofMinutes(10)), general));
         assertThat(rule.evaluate(TestData.measurement(8, 7.6, now, general), rising, general)).isPresent();
+        // H-056: a critical reading sounds the alarm even when the previous one is older than an hour.
+        Anomaly c = rule.evaluate(TestData.measurement(10, 12.67, now, general),
+            List.of(TestData.measurement(9, 7.3, now.minus(Duration.ofMinutes(76)), general)), general).orElseThrow();
+        assertThat(c.severity()).isEqualTo(Anomaly.Severity.CRITICAL);
+        assertThat(c.message()).startsWith("El pH subió de 7.30 a 12.67 en 1 hora y 16 minutos.");
     }
 
     @Test
