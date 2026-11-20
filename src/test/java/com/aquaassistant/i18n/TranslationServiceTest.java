@@ -68,6 +68,40 @@ class TranslationServiceTest {
     }
 
     @Test
+    void translationsThatAreStillSpanishAreRecognized() {
+        assertThat(TranslationService.stillSpanish("it", "¿Qué aplicaste o hiciste?", "¿Qué ha aplicado o ha hecho?")).isTrue();
+        assertThat(TranslationService.stillSpanish("it", "Ác. cianúrico", "Ácido cianúrico")).isTrue();
+        assertThat(TranslationService.stillSpanish("ja", "Destacada estación", "特集 estación")).isTrue();
+        assertThat(TranslationService.stillSpanish("it", "Ya hay un informe en curso.", "C'è già un relatório in corso.")).isTrue();
+        // names of people or places are kept as they are
+        assertThat(TranslationService.stillSpanish("en", "Río de Bogotá", "Bogotá river")).isFalse();
+        assertThat(TranslationService.stillSpanish("fr", "Mi piscina", "Ma piscine")).isFalse();
+        assertThat(TranslationService.stillSpanish("de", "Español", "Español")).isFalse();
+        assertThat(TranslationService.stillSpanish("it", "Cosa", "perché")).isFalse();
+        assertThat(TranslationService.stillSpanish("es", "Qué", "¿Qué?")).isFalse();
+    }
+
+    @Test
+    void aTranslationThatIsStillSpanishIsAskedAgainAndNeverStored() {
+        when(ai.complete(any(AiPrompt.class))).thenReturn(
+            new AiAnswer("{\"t\":[\"¿Qué ha aplicado o ha hecho?\",\"Acido cianurico\"]}", "Google Gemini", "test", 10, 10, false),
+            new AiAnswer("{\"t\":[\"Cosa hai applicato o fatto?\"]}", "Google Gemini", "test", 10, 10, false));
+        List<String> out = service.translate("it", List.of("¿Qué aplicaste o hiciste?", "Ác. cianúrico"), "1.2.3.4");
+        assertThat(out).containsExactly("Cosa hai applicato o fatto?", "Acido cianurico");
+        ArgumentCaptor<AiPrompt> prompts = ArgumentCaptor.forClass(AiPrompt.class);
+        verify(ai, times(2)).complete(prompts.capture());
+        assertThat(prompts.getAllValues().get(1).system()).contains("Spanish words");
+    }
+
+    @Test
+    void aTranslationStillSpanishAfterAskingAgainIsNotStored() {
+        aiAnswers("{\"t\":[\"Ácido cianúrico\"]}");
+        List<String> out = service.translate("it", List.of("Ác. cianúrico"), "1.2.3.4");
+        assertThat(out).containsExactly((String) null);
+        verify(repository, times(0)).saveAndFlush(any(UiTranslation.class));
+    }
+
+    @Test
     void serverTextsShareOneTranslationWhateverTheNumbers() {
         aiAnswers("{\"t\":[\"Measurements: {0}. Average: {1}.\"]}");
         assertThat(service.translateAll("en", List.of("Mediciones: 4. Promedio: 7.65.")))
