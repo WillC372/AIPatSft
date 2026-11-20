@@ -55,6 +55,9 @@ public class TranslationService {
         "[ñ¿¡áéíóú]|\\b(?:el|los|las|del|que|qué|está|tu|tus|agua|medidor|medición|mediciones)\\b",
         Pattern.CASE_INSENSITIVE | Pattern.UNICODE_CASE);
 
+    /** A word with a letter that, among the app's languages, only Spanish uses. */
+    private static final Pattern SPANISH_WORD = Pattern.compile("\\p{L}*[ñÑáíóúÁÍÓÚ]\\p{L}*");
+
     /** Forms of address the app does not use ("vous", "Sie"...): a translation with one is asked again once. */
     static final Map<String, Pattern> OTHER_TONE = Map.of(
         "fr", Pattern.compile("(?i)\\b(vous|votre|vos)\\b"),
@@ -314,6 +317,21 @@ public class TranslationService {
                         }
                     }
                 }
+                List<Integer> spanish = new ArrayList<>();
+                for (int i = 0; i < texts.size() && i < translated.size(); i++) {
+                    if (stillSpanish(lang, texts.get(i), translated.get(i))) {
+                        spanish.add(i);
+                    }
+                }
+                if (!spanish.isEmpty()) {
+                    List<String> again = askAgain(lang, spanish.stream().map(texts::get).toList(),
+                        "Your previous answer left Spanish words. Translate every word, also the names of the app's buttons and sections. ");
+                    for (int j = 0; j < spanish.size() && j < again.size(); j++) {
+                        if (again.get(j) != null && !again.get(j).isBlank()) {
+                            translated.set(spanish.get(j), again.get(j));
+                        }
+                    }
+                }
             } finally {
                 calls.release();
             }
@@ -332,7 +350,7 @@ public class TranslationService {
             String source = texts.get(i);
             String target = i < translated.size() ? translated.get(i) : null;
             if (target == null || target.isBlank() || !sameMarkers(source, target) || target.length() > MAX_TEXT * 3
-                || leftInSpanish(source, target)) {
+                || leftInSpanish(source, target) || stillSpanish(lang, source, target)) {
                 continue;
             }
             dictionary.put(source, target);
@@ -342,8 +360,13 @@ public class TranslationService {
 
     /** The texts whose translation used another form of address, asked once more (kept as they were if that fails). */
     private List<String> askAgain(String lang, List<String> texts) {
+        return askAgain(lang, texts, "Your previous answer used the wrong form of address. ");
+    }
+
+    /** The texts asked once more with a reminder of what was wrong (kept as they were if that fails). */
+    private List<String> askAgain(String lang, List<String> texts, String reminder) {
         try {
-            return ask(lang, texts, "Your previous answer used the wrong form of address. ");
+            return ask(lang, texts, reminder);
         } catch (RuntimeException ex) {
             return List.of();
         }
@@ -396,6 +419,29 @@ public class TranslationService {
     static boolean leftInSpanish(String source, String target) {
         return target.strip().equalsIgnoreCase(source.strip()) && SPANISH.matcher(source).find()
             && !Languages.codes().stream().map(Languages::nativeName).toList().contains(source.strip());
+    }
+
+    /**
+     * True when a translation still has Spanish in it: ¿ or ¡, or a word with a letter only Spanish uses among the
+     * app's languages (ñ, á, í, ó, ú), such as «¿Qué ha aplicado?», «Ácido cianúrico» or «estación» left in Italian or
+     * Japanese. A capitalized word copied from the source is a name of a person or place and may stay.
+     */
+    static boolean stillSpanish(String lang, String source, String target) {
+        if (target == null || Languages.ORIGINAL.equals(lang)) {
+            return false;
+        }
+        if (target.indexOf('¿') >= 0 || target.indexOf('¡') >= 0) {
+            return true;
+        }
+        Matcher m = SPANISH_WORD.matcher(target);
+        while (m.find()) {
+            String word = m.group();
+            boolean name = Character.isUpperCase(word.codePointAt(0)) && source.contains(word);
+            if (!name) {
+                return true;
+            }
+        }
+        return false;
     }
 
     static boolean sameMarkers(String source, String target) {
