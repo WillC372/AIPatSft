@@ -54,8 +54,8 @@ public class AiUsageService {
     }
 
     /**
-     * {@code masked}: for the shared demo administrator, whose password is public, the e-mails are shown as
-     * "w***@dominio" (the same rule as the backend's administration screen).
+     * {@code masked}: for the shared demo administrator, whose password is public, the e-mails of real people are shown
+     * as "w***@dominio" (the same rule as the backend's administration screen).
      */
     @Transactional(readOnly = true)
     public AiUsageReport global(int days, boolean masked) {
@@ -63,13 +63,19 @@ public class AiUsageService {
         List<AiUsage> rows = repository.findByCreatedAtAfterOrderByCreatedAtAsc(since(period));
         Map<Long, List<AiUsage>> byUser = rows.stream().collect(Collectors.groupingBy(AiUsage::getUserId));
         List<AiUsageReport.UserRow> users = byUser.entrySet().stream().map(e -> new AiUsageReport.UserRow(e.getKey(),
-                userRepository.findById(e.getKey()).map(u -> masked ? maskEmail(u.getEmail()) : u.getEmail()).orElse("(eliminado)"),
+                userRepository.findById(e.getKey()).map(u -> masked && !openToDemo(u) ? maskEmail(u.getEmail()) : u.getEmail())
+                    .orElse("(eliminado)"),
                 successful(e.getValue()).size(),
                 tokens(e.getValue()), cost(e.getValue())))
             .sorted(Comparator.comparing(AiUsageReport.UserRow::estimatedUsd).reversed()
                 .thenComparing(Comparator.comparingLong(AiUsageReport.UserRow::calls).reversed()))
             .limit(10).toList();
         return build(period, rows, users, null, null);
+    }
+
+    /** Demonstration and example accounts (@example.com) are shown as they are; the rule of the backend's administration. */
+    static boolean openToDemo(com.aquaassistant.user.User user) {
+        return user.isDemo() || String.valueOf(user.getEmail()).toLowerCase(java.util.Locale.ROOT).endsWith("@example.com");
     }
 
     static String maskEmail(String email) {

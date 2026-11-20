@@ -143,6 +143,10 @@ class PhotoReadingIntegrationTest {
         assertThat(meter.path("ph").asDouble()).isEqualTo(7.42);
         assertThat(meter.path("agreement").asText()).isEqualTo("SINGLE");
         assertThat(SECOND.requests()).hasSize(before);
+        // The reader is told to take only the number marked "pH", never the temperature or another value.
+        assertThat(FIRST.requests().get(FIRST.requests().size() - 1))
+            .contains("Read only the number that has the label or unit \\\"pH\\\" next to it")
+            .contains("Never take the temperature, mV or any other number as the pH");
     }
 
     private String register() {

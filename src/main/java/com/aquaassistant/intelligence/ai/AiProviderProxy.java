@@ -187,7 +187,7 @@ public class AiProviderProxy implements AiTextProvider, AiCallListener {
     /** Daily AI queries allowed; administrators have no limit ({@link #UNLIMITED}). */
     public int quotaFor(Long userId) {
         // The shared demo administrator (its password is public on the sign-in screen) gets the Premium quota, not unlimited.
-        return userRepository.findById(userId).map(user -> user.isUnlimited() && !user.isDemo() ? UNLIMITED
+        return userRepository.findById(userId).map(user -> user.isUnlimited() ? UNLIMITED
             : user.getPlan() == Plan.PREMIUM ? config.dailyQuotaPremium() : config.dailyQuotaFree()).orElse(config.dailyQuotaFree());
     }
 

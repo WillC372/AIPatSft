@@ -43,8 +43,12 @@ public class PhotoReadingService {
            Put in nearestReferenceValues the most similar chart values (one or two) and estimate ph between them.
            If the chart does not appear, use the universal indicator scale, set referenceChartVisible=false and a low confidence.
            phLow and phHigh must reflect the real uncertainty of the color, not that of an instrument.
-        3. METER_DISPLAY: transcribe exactly the pH number on the display. If the display shows the temperature,
-           put it in temperatureC and temperatureVisible=true; otherwise temperatureC=0 and temperatureVisible=false.
+        3. METER_DISPLAY: a display often shows several numbers (pH, temperature, mV or ORP, TDS, EC, time, battery).
+           Read only the number that has the label or unit "pH" next to it (beside, above or below it) and transcribe it
+           exactly, with its decimals. Never take the temperature, mV or any other number as the pH. If no number on the
+           display is marked "pH", or you cannot tell which one it is, readable=false and ph=0.
+           If the display shows the temperature (a number with °C or °F), put it in temperatureC (in °C) and
+           temperatureVisible=true; otherwise temperatureC=0 and temperatureVisible=false.
         4. If the photo does not allow a reading (blurry, no strip, no display, not a pH test), readable=false and ph=0.
            Never invent a value.
         5. issues: problems of the photo that affect the reading. observations: one or two sentences in Spanish explaining what you compared.
